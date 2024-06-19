@@ -88,7 +88,6 @@ static int seed_src_get_ctx_params(void *vseed, OSSL_PARAM params[])
 {
     PROV_SEED_SRC *s = (PROV_SEED_SRC *)vseed;
     OSSL_PARAM *p;
-    printf("THIS WAS CALLED\n");
 
     p = OSSL_PARAM_locate(params, OSSL_RAND_PARAM_STATE);
     if (p != NULL && !OSSL_PARAM_set_int(p, s->state))

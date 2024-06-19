@@ -6,6 +6,7 @@
 #include <openssl/err.h>
 #include <openssl/params.h>
 #include <openssl/core_dispatch.h>
+#include "quantis.h"
 
 #define OPENSSL_NO_ENGINE 1
 OSSL_provider_init_fn my_prov_init;
@@ -15,13 +16,13 @@ int main()
     OSSL_PROVIDER* prov = NULL;
     OSSL_LIB_CTX *libCtx = OSSL_LIB_CTX_new();
 
-    if(OSSL_PROVIDER_add_builtin(libCtx, "skeleton", &my_prov_init))
-        prov = OSSL_PROVIDER_load(libCtx, "skeleton");
+    if(OSSL_PROVIDER_add_builtin(libCtx, QUANTIS_RNG_PROV_NAME, &my_prov_init))
+        prov = OSSL_PROVIDER_load(libCtx, QUANTIS_RNG_PROV_NAME);
     if(prov == NULL)
         printf("Failed to find provider\n");
     else
         printf("Provider found!\n");
-    if(!OSSL_PROVIDER_available(libCtx, "skeleton")) 
+    if(!OSSL_PROVIDER_available(libCtx, QUANTIS_RNG_PROV_NAME)) 
     {
         printf("Failed to find the seed provider\n");
         return 0;
@@ -48,7 +49,7 @@ int main()
         buf[i] = (int)'a';
 
     /* Create the random provider */
-    EVP_RAND *rand = EVP_RAND_fetch(libCtx, "skeleton", NULL);
+    EVP_RAND *rand = EVP_RAND_fetch(libCtx, QUANTIS_RNG_PROV_NAME, NULL);
   
     if(rand == NULL)
         printf("FAILED TO LOAD SKELETON.\n");
@@ -60,26 +61,31 @@ int main()
     else
         printf("SEED CTX Succeeded\n");
 
+
+    /* We do not support any of the parameters so fill with garbage data */
+    EVP_RAND_instantiate(seedCtx, 0, 0, NULL, 0, NULL);
     
     /* Example of how a request and set can be used on the parameters */
-    int testint = 99999;
+    int quantis_cardnum = 0;
+    
     OSSL_PARAM request[] = {
-        OSSL_PARAM_int("QuantisCardNo", &testint),
+        OSSL_PARAM_int(QUANTIS_PARAM_CARDNO, &quantis_cardnum),
         OSSL_PARAM_END,
     };
+    /*
     EVP_RAND_CTX_get_params(seedCtx, request);
-    printf("Test Int: %d", testint);
+    printf("Retrieved %s: %d\n", QUANTIS_PARAM_CARDNO,  quantis_cardnum);
+    */
 
-    
-    testint = -99999;
+    /* Setting to my card number, 0 */
     OSSL_PARAM set[] = {
-        OSSL_PARAM_construct_int("QuantisCardNo", &testint),
+        OSSL_PARAM_construct_int(QUANTIS_PARAM_CARDNO, &quantis_cardnum),
         OSSL_PARAM_END,
     };
 
     EVP_RAND_CTX_set_params(seedCtx, set);
     EVP_RAND_CTX_get_params(seedCtx, request);
-    printf("Test int: %d", testint);
+    printf("(After set) Retrieved %s: %d\n", QUANTIS_PARAM_CARDNO, quantis_cardnum);
 
     EVP_RAND_free(rand);
 
@@ -93,6 +99,7 @@ int main()
     EVP_RAND_free(rand);
     EVP_RAND_instantiate(drbgCtx, 128, 0, NULL, 0, params);
 
+    /* Using the DRBG with our seed to generate random bytes */
     EVP_RAND_generate(drbgCtx, buf, sizeof(buf), 0, 0, NULL, 0);
 
     printf("BYTES: %s\n", buf);
