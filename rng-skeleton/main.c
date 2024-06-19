@@ -60,27 +60,6 @@ int main()
     else
         printf("SEED CTX Succeeded\n");
 
-    
-    /* Example of how a request and set can be used on the parameters */
-    int testint = 99999;
-    OSSL_PARAM request[] = {
-        OSSL_PARAM_int("QuantisCardNo", &testint),
-        OSSL_PARAM_END,
-    };
-    EVP_RAND_CTX_get_params(seedCtx, request);
-    printf("Test Int: %d", testint);
-
-    
-    testint = -99999;
-    OSSL_PARAM set[] = {
-        OSSL_PARAM_construct_int("QuantisCardNo", &testint),
-        OSSL_PARAM_END,
-    };
-
-    EVP_RAND_CTX_set_params(seedCtx, set);
-    EVP_RAND_CTX_get_params(seedCtx, request);
-    printf("Test int: %d", testint);
-
     EVP_RAND_free(rand);
 
     /* Build an AES256 DRBG */
