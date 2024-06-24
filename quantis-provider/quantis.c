@@ -44,7 +44,6 @@ static void *seed_src_new(void *provctx, void *parent,
   PROV_SEED_SRC *s;
 
   if (parent != NULL) {
-    printf("ERROR HAS PARENT\n");
     ERR_raise(ERR_LIB_PROV, PROV_R_SEED_SOURCES_MUST_NOT_HAVE_A_PARENT);
     return NULL;
   }
@@ -52,7 +51,7 @@ static void *seed_src_new(void *provctx, void *parent,
   s = (PROV_SEED_SRC *)OPENSSL_zalloc(sizeof(*s));
 
   if (!s) {
-    printf("NULL CTX\n");
+    printf("Failed to allocate memory\n");
     return NULL;
   }
 
@@ -208,6 +207,9 @@ static size_t seed_get_seed(void *vseed, unsigned char **pout, int entropy,
   return 1;
 }
 
+/*
+ * Using the quantis masking to check if the first 2 modules are enabled on the card.
+ */
 static int seed_src_generate(void *seed, unsigned char *out, size_t out_len,
                              unsigned int strength,
                              ossl_unused int predictionResistance,
