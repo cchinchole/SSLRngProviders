@@ -14,3 +14,6 @@
   make <br><br>
   ./main <br><br>
   (for quantis you may need to LD_LIBRARY_PATH=/usr/local/your_quantis_lib_dir/ ./main <br>
+
+# Future / TODO #
+  I have built a super basic rust provider and will add it to this once I have it cleaned up and more readable.
