@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#define DEBUG
+
 static OSSL_FUNC_rand_newctx_fn seed_src_new;
 static OSSL_FUNC_rand_freectx_fn seed_src_free;
 static OSSL_FUNC_rand_instantiate_fn seed_src_instantiate;
@@ -38,6 +40,15 @@ typedef struct {
   int quantis_cardno;
 } PROV_SEED_SRC;
 
+void debugPrint(const char *format, ...)
+{
+    #ifdef DEBUG
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+    #endif
+}
 /* Create a context for the rng generator */
 static void *seed_src_new(void *provctx, void *parent,
                           const OSSL_DISPATCH *parent_dispatch) {
@@ -51,7 +62,7 @@ static void *seed_src_new(void *provctx, void *parent,
   s = (PROV_SEED_SRC *)OPENSSL_zalloc(sizeof(*s));
 
   if (!s) {
-    printf("Failed to allocate memory\n");
+    debugPrint("Failed to allocate memory\n");
     return NULL;
   }
 
@@ -249,7 +260,7 @@ static int seed_src_generate(void *seed, unsigned char *out, size_t out_len,
       strMask = "not found";
       strStatus = "";
     }
-    //printf("      module %d: %s %s\n", j, strMask, strStatus);
+    debugPrint("module %d: %s %s\n", j, strMask, strStatus);
     //debug info here ^^
   }
   if(primed >=2 )
@@ -257,7 +268,7 @@ static int seed_src_generate(void *seed, unsigned char *out, size_t out_len,
               out_len);
   else
   {
-      printf("QUANTIS CARD NOT ENABLED OR FOUND.\n");
+      debugPrint("QUANTIS CARD NOT ENABLED OR FOUND.\n");
       return 0;
   }
   return 1;
@@ -312,11 +323,11 @@ int OSSL_provider_init(const OSSL_CORE_HANDLE *handle, const OSSL_DISPATCH *in,
                        const OSSL_DISPATCH **out, void **provctx) {
   *provctx = seed_src_new(provctx, NULL, in);
   if (*provctx == NULL) {
-    fprintf(stderr, "Failed to init RNG Provider\n");
+    debugPrint("Failed to init RNG Provider\n");
     return 0;
   }
 
   *out = providerFunctions;
-  printf("Successfully initialized the RNG Provider\n");
+  debugPrint("Successfully initialized the RNG Provider\n");
   return 1;
 }
